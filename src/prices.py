@@ -1,7 +1,7 @@
 from flask import Flask
-from flask import request
 
 from src.db import create_lift_pass_db_connection
+from src.delivery.api.add_lift_pass_controller import AddLiftPassController
 from src.delivery.api.get_lift_pass_cost_controller import GetLiftPassCostController
 
 app = Flask("lift-pass-pricing")
@@ -24,15 +24,8 @@ def get_lift_pass_cost() -> dict[str, int]:
 
 @app.route("/prices", methods=["PUT"])
 def add_lift_pass() -> dict:
-    lift_pass_cost = request.args["cost"]
-    lift_pass_type = request.args["type"]
-    cursor = connection.cursor()
-    cursor.execute(
-        "INSERT INTO `base_price` (type, cost) VALUES (?, ?) "
-        + "ON DUPLICATE KEY UPDATE cost = ?",
-        (lift_pass_type, lift_pass_cost, lift_pass_cost),
-    )
-    return {}
+    add_lift_pass_controller = AddLiftPassController(connection)
+    return add_lift_pass_controller()
 
 
 if __name__ == "__main__":
