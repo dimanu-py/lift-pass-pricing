@@ -19,7 +19,7 @@ connection = None
 
 
 @app.route("/prices", methods=["GET", "PUT"])
-def prices():
+def prices() -> dict[str, int]:
     res = {}
     global connection
     if connection is None:
@@ -41,7 +41,9 @@ def prices():
         )
         row = cursor.fetchone()
         result = {"cost": row[0]}
-        if "age" in request.args and request.args.get("age", type=int) < 6:
+        age = request.args.get("age")
+
+        if age and int(age) < 6:
             res["cost"] = 0
         else:
             if "type" in request.args and request.args["type"] != "night":
@@ -67,25 +69,22 @@ def prices():
                     reduction = 35
 
                 # TODO: apply reduction for others
-                if "age" in request.args and request.args.get("age", type=int) < 15:
+                if age and int(age) < 15:
                     res["cost"] = math.ceil(result["cost"] * 0.7)
                 else:
-                    if "age" not in request.args:
+                    if not age:
                         cost = result["cost"] * (1 - reduction / 100)
                         res["cost"] = math.ceil(cost)
                     else:
-                        if (
-                            "age" in request.args
-                            and request.args.get("age", type=int) > 64
-                        ):
+                        if age and int(age) > 64:
                             cost = result["cost"] * 0.75 * (1 - reduction / 100)
                             res["cost"] = math.ceil(cost)
                         else:
                             cost = result["cost"] * (1 - reduction / 100)
                             res["cost"] = math.ceil(cost)
             else:
-                if "age" in request.args and request.args.get("age", type=int) >= 6:
-                    if request.args.get("age", type=int) > 64:
+                if age and int(age) >= 6:
+                    if int(age) > 64:
                         res["cost"] = math.ceil(result["cost"] * 0.4)
                     else:
                         res.update(result)
