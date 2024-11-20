@@ -37,7 +37,7 @@ def prices() -> dict[str, int]:
     else:
         cursor = connection.cursor()
         cursor.execute(
-            f"SELECT cost FROM base_price " + "WHERE type = ? ", (request.args["type"],)
+            "SELECT cost FROM base_price " + "WHERE type = ? ", (request.args["type"],)
         )
         row = cursor.fetchone()
         result = {"cost": row[0]}

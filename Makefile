@@ -44,3 +44,15 @@ lint:
 .PHONY: check-typing
 check-typing:
 	 docker compose run --rm --no-deps lift poetry run mypy .
+
+.PHONY: local-setup
+local-setup:
+	scripts/local-setup.sh
+	make install
+
+.PHONY: install
+install:
+	docker compose run --rm --no-deps lift poetry install
+
+.PHONY: pre-commit
+pre-commit: check-typing check-format check-lint test
