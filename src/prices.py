@@ -5,6 +5,7 @@ from flask import request
 from datetime import datetime
 from src.db import create_lift_pass_db_connection
 
+
 app = Flask("lift-pass-pricing")
 
 connection_options = {
