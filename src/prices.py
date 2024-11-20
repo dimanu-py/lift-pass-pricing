@@ -1,13 +1,10 @@
-import math
-
-from flask import Flask
-from flask import request
 from datetime import datetime
 
-from pymysql.connections import Connection
+import math
+from flask import Flask
+from flask import request
 
 from src.db import create_lift_pass_db_connection
-
 
 app = Flask("lift-pass-pricing")
 
@@ -20,17 +17,11 @@ connection_options = {
 
 connection = create_lift_pass_db_connection(connection_options)
 
-@app.route("/prices", methods=["GET", "PUT"])
-def prices() -> dict[str, int]:
-    if request.method == "PUT":
-        return _add_lift_pass(connection)
-    else:
-        return _get_lift_pass_cost(connection)
 
-
-def _get_lift_pass_cost(conn: Connection) -> dict[str, int]:
+@app.route("/prices", methods=["GET"])
+def get_lift_pass_cost() -> dict[str, int]:
     res = {}
-    cursor = conn.cursor()
+    cursor = connection.cursor()
     cursor.execute(
         "SELECT cost FROM base_price " + "WHERE type = ? ", (request.args["type"],)
     )
@@ -41,7 +32,7 @@ def _get_lift_pass_cost(conn: Connection) -> dict[str, int]:
         res["cost"] = 0
     else:
         if "type" in request.args and request.args["type"] != "night":
-            cursor = conn.cursor()
+            cursor = connection.cursor()
             cursor.execute("SELECT * FROM holidays")
             is_holiday = False
             reduction = 0
@@ -50,15 +41,15 @@ def _get_lift_pass_cost(conn: Connection) -> dict[str, int]:
                 if "date" in request.args:
                     d = datetime.fromisoformat(request.args["date"])
                     if (
-                            d.year == holiday.year
-                            and d.month == holiday.month
-                            and holiday.day == d.day
+                        d.year == holiday.year
+                        and d.month == holiday.month
+                        and holiday.day == d.day
                     ):
                         is_holiday = True
             if (
-                    not is_holiday
-                    and "date" in request.args
-                    and datetime.fromisoformat(request.args["date"]).weekday() == 0
+                not is_holiday
+                and "date" in request.args
+                and datetime.fromisoformat(request.args["date"]).weekday() == 0
             ):
                 reduction = 35
 
@@ -87,10 +78,11 @@ def _get_lift_pass_cost(conn: Connection) -> dict[str, int]:
     return res
 
 
-def _add_lift_pass(conn: Connection) -> dict:
+@app.route("/prices", methods=["PUT"])
+def add_lift_pass() -> dict:
     lift_pass_cost = request.args["cost"]
     lift_pass_type = request.args["type"]
-    cursor = conn.cursor()
+    cursor = connection.cursor()
     cursor.execute(
         "INSERT INTO `base_price` (type, cost) VALUES (?, ?) "
         + "ON DUPLICATE KEY UPDATE cost = ?",
