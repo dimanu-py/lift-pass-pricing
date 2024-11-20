@@ -56,3 +56,7 @@ install:
 
 .PHONY: pre-commit
 pre-commit: check-typing check-format check-lint test
+
+.PHONY: watch
+watch:
+	docker compose run --rm lift poetry run ptw
