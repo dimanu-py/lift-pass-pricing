@@ -24,3 +24,23 @@ coverage:
 	docker compose run --rm lift poetry run coverage run --branch -m pytest test
 	docker compose run --rm lift poetry run coverage html
 	@echo "You can open the report at ${PWD}/htmlcov/index.html"
+
+.PHONY: format
+format:
+	docker compose run --rm --no-deps lift poetry run ruff format src test
+
+.PHONY: check-format
+check-format:
+	docker compose run --rm --no-deps lift poetry run ruff format --check src test
+
+.PHONY: check-lint
+check-lint:
+	docker compose run --rm --no-deps lift poetry run ruff check src test
+
+.PHONY: lint
+lint:
+	docker compose run --rm --no-deps lift poetry run ruff check --fix src test
+
+.PHONY: check-typing
+check-typing:
+	 docker compose run --rm --no-deps lift poetry run mypy .
